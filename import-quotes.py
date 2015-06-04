@@ -1,3 +1,23 @@
+#!/usr/bin/env/python
+
+# 
+# Copyright (C) 2015  Thomas Freeman
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+#Built-in modules
 import argparse
 from gnucash import Session, Account, Split
 import gnucash
@@ -20,24 +40,20 @@ def main(filename, namespace, security):
     
     # Initialize Gnucash session
     session = Session(url, True, False, False)
-    root = session.book.get_root_account()
     book = session.book
-    account = book.get_root_account()
-    pdb = book.get_price_db()
     commod_table = book.get_table()
     stock = commod_table.lookup(namespace, security)
-    cur = commod_table.lookup('CURRENCY', 'USD')
-    # Add the prices
-    pdb = book.get_price_db()
-    # Get stock data
-    pl = pdb.get_prices(stock,cur)
+    currency = commod_table.lookup('CURRENCY', 'USD')
+    pricedb = book.get_price_db()
+    price_list = pricedb.get_prices(stock,currency)
 
-    if len(pl)<1:
+    if len(price_list)<1:
         print('Need at least one database entry to clone ...')
 
-    pl0 = pl[0]
-    for i in range(1,len(pl)):
-        pdb.remove_price(pl[i])
+	# Delete all the old price entries except for the first
+    pl0 = price_list[0]
+    for i in range(0,len(price_list)):
+        pricedb.remove_price(price_list[i])
 
     print(stock_price.index)
     for item in stock_price.index:
@@ -51,7 +67,7 @@ def main(filename, namespace, security):
         v.num = int(Fraction.from_float(stock_price["Close"][item.strftime("%Y-%m-%d")]).limit_denominator(100000).numerator)
         v.denom = int(Fraction.from_float(stock_price["Close"][item.strftime("%Y-%m-%d")]).limit_denominator(100000).denominator)
         p_new.set_value(v)
-        pdb.add_price(p_new)
+        pricedb.add_price(p_new)
 
     # Clean up
     session.save()
