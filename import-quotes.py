@@ -96,7 +96,7 @@ def parse_arguments():
     parser.add_argument(
         "-s",
         "--start-date",
-        help="The oldest (first) date from which historical quotes will be obtained formatted as %Y-%m-%d."
+        help="The oldest (first) date from which historical quotes will be obtained formatted as %%Y-%%m-%%d."
     )
     args = parser.parse_args()
     return args
@@ -104,8 +104,10 @@ def parse_arguments():
 
 if __name__ == "__main__":
     args = parse_arguments()
+	# Run if start date argument given
     if args.start_date:
         main(args.filename, args.namespace, args.security, args.start_date)
+	# Run using default date if no start date argument given
     else:
         main(args.filename, args.namespace, args.security)
         
